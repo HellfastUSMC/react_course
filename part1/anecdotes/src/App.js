@@ -12,13 +12,14 @@ const anecdotes = [
   
 const rating = {}
 
-for (const [i, val] of anecdotes.entries()) {
+for (const [i] of anecdotes.entries()) {
   rating[i] = 0
 }
 
 const App = () => {
    
   const [selected, setSelected] = useState(0)
+  const [points, setPoints] = useState(rating)
 
   const randState = () => {
     const rand_num = Math.floor(Math.random() * (anecdotes.length - 0) + 0)
@@ -26,14 +27,22 @@ const App = () => {
   }
 
   const upVote = () => {
-    rating[selected] = rating[selected] + 1
+    const temp = {...points}
+    temp[selected] += 1
+    setPoints(temp)
   }
+
+  const maxKey = Object.keys(points).reduce((a, b) => points[a] > points[b] ? a : b)
+
   return (
     <div>
+      <h1>Anecdote of the day</h1>
       <p>{anecdotes[selected]}</p>
-      <p>Rating  - {rating[selected]}</p>
-      <button onClick={randState}>New joke</button>
+      <p>Rating  - {points[selected]}</p>
+      <button onClick={randState}>Next joke</button>
       <button onClick={upVote}>Upvote</button>
+      <h1>Top voted</h1>
+      <p>{anecdotes[maxKey]}</p>
     </div>
   )
 }
