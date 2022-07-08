@@ -1,19 +1,32 @@
 import { useState } from 'react'
-const Persons = ({persons}) => {
+
+const Search = ({newSearch, setSearch}) => {
+  const handleSearch = (event) => {
+    setSearch(event.target.value)
+  }
+  return (
+    <>
+      <h2>Search</h2>
+      <input value={newSearch} onChange={handleSearch}/>
+    </>
+  )
+}
+
+const Persons = ({persons, newSearch}) => {
   let pers_id = 0
-  const output = persons.map(person => <div key={pers_id += 1}><p>Name - {person.name}</p><p>Phone - {person.phone}</p><hr align="left" width="150" size="2" color="#ff0000" /></div>)
+  let output = persons
+  if (newSearch !== '') {
+    output = persons.filter(person => person.name.toLowerCase().includes(newSearch.toLowerCase()))
+  }
   return (
     <div>
       <h2>Numbers</h2>
-      {output}
+      {output.map(person => <div key={pers_id += 1}><p>Name - {person.name}</p><p>Phone - {person.phone}</p><hr align="left" width="150" size="2" color="#ff0000" /></div>)}
     </div>
   )
 }
 
-const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas' }
-  ]) 
+const AddContact = ({persons, setPersons}) => {
   const [newName, setNewName] = useState('')
   const [newPhone, setNewPhone] = useState('')
 
@@ -31,29 +44,37 @@ const App = () => {
       name: newName,
       phone: newPhone
     }
-    console.log(persons.includes(personObj), persons, personObj.name)
     if (persons.some(val => val.name === personObj.name)) {
       window.alert(`${newName} already exists!`)
     } else {
       setPersons(persons.concat(personObj))
     }
   }
+  return (
+    <form onSubmit={handleAdd}>
+      <div>
+        <h2>Add contacts</h2>
+        <p>name: <input value={newName} onChange={handleNameInput}/></p>
+        <p>phone: <input value={newPhone} onChange={handlePhoneInput}/></p>
+        <button type="submit">add</button>
+      </div>
+    </form>
+  )
+}
+
+const App = () => {
+
+  const [newSearch, setSearch] = useState('')
+  const [persons, setPersons] = useState([
+    { name: 'Arto Hellas' }
+  ]) 
 
   return (
     <div>
-      <h2>Phonebook</h2>
-      {/* <Filter /> */}
-      <Persons persons={persons} />
-      <h2>Add contacts</h2>
-      <form onSubmit={handleAdd}>
-        <div>
-          <p>name: <input value={newName} onChange={handleNameInput}/></p>
-          <p>phone: <input value={newPhone} onChange={handlePhoneInput}/></p>
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
+      <h1>Phonebook</h1>
+      <Search newSearch={newSearch} setSearch={setSearch}/>
+      <Persons persons={persons} newSearch={newSearch}/>
+      <AddContact persons={persons} setPersons={setPersons}/>
     </div>
   )
 }
