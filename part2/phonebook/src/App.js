@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 
 const Search = ({newSearch, setSearch}) => {
@@ -22,7 +22,7 @@ const Persons = ({persons, newSearch}) => {
   return (
     <div>
       <h2>Numbers</h2>
-      {output.map(person => <div key={pers_id += 1}><p>Name - {person.name}</p><p>Phone - {person.phone}</p><hr align="left" width="150" size="2" color="#ff0000" /></div>)}
+      {output.map(person => <div key={pers_id += 1}><p>Name - {person.name}</p><p>Phone - {person.number}</p><hr align="left" width="150" size="2" color="#ff0000" /></div>)}
     </div>
   )
 }
@@ -66,12 +66,14 @@ const AddContact = ({persons, setPersons}) => {
 const App = () => {
 
   const [newSearch, setSearch] = useState('')
-  const [persons, setPersons] = useState()
+  const [persons, setPersons] = useState([])
 
   useEffect(() => {
     axios
       .get('http://localhost:3001/persons')
-      .then(response => setPersons(response.data))
+      .then((response) => {
+        setPersons(response.data)
+        })
     }, [])
 
   return (
