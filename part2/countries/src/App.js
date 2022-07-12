@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 
-const Search = ({setCountries, setSearch, newSearch}) => {
+const Search = ({setSearch, newSearch}) => {
 
   const handleSearch = (event) => {
     setSearch(event.target.value)
@@ -14,7 +14,33 @@ const Search = ({setCountries, setSearch, newSearch}) => {
   )
 }
 
-const CountriesInfo = ({countries, setSearch, weather}) => {
+const Weather = ({countries, weather, weather_image}) => {
+  console.log(weather.length, countries.length)
+  if (countries.length > 0 && weather !== [] && weather_image !== ''){
+    console.log(countries, weather)
+    return(
+      <>
+        <h3>
+          Weather in {countries[0].capital[0]}
+        </h3>
+        <p>
+          Temp - {weather.current_condition[0].temp_C} °C
+        </p>
+        <p>
+          Condition - {weather.current_condition[0].weatherDesc[0].value}
+        </p>
+        <p>
+          Wind - {weather.current_condition[0].windspeedKmph} km\h
+        </p>
+        <p>
+          <img src={'http://wttr.in/'+countries[0].capital[0]+'_M0pnQ_lang=en.png'}  alt={countries[0].capital[0]}/>
+        </p>
+      </>
+    )
+  }
+}
+
+const CountriesInfo = ({countries, setSearch, weather, weather_image}) => {
 
   const handleMore = (country) => {
     setSearch(country)
@@ -40,19 +66,11 @@ const CountriesInfo = ({countries, setSearch, weather}) => {
             Languages
           </h3>
           {langs.map(lang => <p key={lang}>{lang}</p>)}
-          <img src={countries[0].flags['png']} alt={countries[0].name.common}/>
           <h3>
-            Weather in {countries[0].capital[0]}
+            Flag
           </h3>
-          <p>
-            Temp - {weather.current_condition[0].temp_C} Celsius
-          </p>
-          <p>
-            Condition - {weather.current_condition[0].weatherDesc[0].value}
-          </p>
-          <p>
-            Wind - {weather.current_condition[0].windspeedKmph} km\h
-          </p>
+          <img src={countries[0].flags.png} alt={countries[0].name.common}/>
+          <Weather countries={countries} weather={weather} weather_image={weather_image}/>
         </div>
       )
     }
@@ -74,6 +92,7 @@ const App = () => {
   const [newSearch, setSearch] = useState('')
   const [countries, setCountries] = useState([])
   const [weather, setWeather] = useState([])
+  const [weather_image, setWeather_image] = useState('')
 
   useEffect(() => {
     axios
@@ -89,19 +108,27 @@ const App = () => {
     if (countries.length !== 1) {
       return
     }
-    console.log('http://wttr.in/'+countries[0].capital[0]+'?M&format=j2')
     axios
-      .get('http://wttr.in/'+countries[0].capital[0]+'?M&format=j2')
-      .then(response => {setWeather(response.data)
-                         console.log(response.data)})
+      .get('http://wttr.in/' + countries[0].capital[0] + '?M&format=j2')
+      .then(response => {setWeather(response.data)})
+  },[countries]
+  )
+  
+  useEffect(() => {
+    if (countries.length !== 1) {
+      return
+    }
+    axios
+      .get('http://wttr.in/' + countries[0].capital[0] + '.png')
+      .then(response => {setWeather_image(response.data)})
   },[countries]
   )
 
   return (
     <div>
       <h1>Countries</h1>
-      <Search setCountries={setCountries} setSearch={setSearch} newSearch={newSearch} />
-      <CountriesInfo countries={countries} setSearch={setSearch} weather={weather}/>
+      <Search setSearch={setSearch} newSearch={newSearch} />
+      <CountriesInfo countries={countries} setSearch={setSearch} weather={weather} weather_image={weather_image}/>
     </div>
   )
 }
