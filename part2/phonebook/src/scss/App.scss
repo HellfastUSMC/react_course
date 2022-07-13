@@ -1,0 +1,88 @@
+$error-brd-color: rgba(255, 0, 0, 1);
+$msg-brd-color: rgba(30, 255, 0, 1);
+$btn-color: rgba(132, 0, 255, 1);
+$btn-color-hover: rgb(47, 0, 90);
+$header-font: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+$contacts-background: rgb(250, 250, 250);
+
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: center;
+    text-align: center;
+    font-family: $header-font;
+    letter-spacing: 0.1rem;
+    .plate {
+        border: 5px solid $msg-brd-color;
+        display: flex;
+        justify-content: center;
+        vertical-align: center;
+        position: absolute;
+        width:  80%;
+        bottom: 10%;
+        left: 0;
+        right: 0;
+    }
+    button {
+        border: none;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        font-size: 1rem;
+        font-weight: 550;
+        letter-spacing: 0.05rem;
+        color: rgb(255, 255, 255);
+        background-color: $btn-color;
+        transition: all 0.5s ease-out;
+        margin-top: 10px;
+            &:hover {
+                background-color: $btn-color-hover;
+                cursor: pointer;
+            }
+        }
+    .phonebook {
+        display: flex;
+        justify-content: center;
+        flex-direction: row;
+        text-align: center;
+        flex-wrap: wrap;
+        align-items: center;
+        .contact {
+            background: $contacts-background;
+            border: 1px solid rgb(187, 187, 187);
+            margin: 5px;
+            display: flex;
+            width: 300px;
+            justify-content: center;
+            vertical-align: center;
+            flex-direction: column;
+            hr {
+                width: 100%;
+                border: 1px solid $btn-color;
+            }
+            p {
+                margin: 5px;
+            }
+            }
+        }
+    form {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .add-contact {
+        background: $contacts-background;
+        border: 1px solid rgb(187, 187, 187);
+        margin: 5px;
+        display: flex;
+        width: 300px;
+        justify-content: center;
+        vertical-align: center;
+        flex-direction: column;
+    }
+}

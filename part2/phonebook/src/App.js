@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import {getEntries, addEntry, updateEntry, rmEntry} from './db_ops'
-import './App.css'
+import './css/App.css'
 
 const errMsg = (setError, msg) => {
   setError(msg)
@@ -10,6 +10,10 @@ const errMsg = (setError, msg) => {
 const actionMsg = (setActMsg, msg) => {
   setActMsg(msg)
   setInterval(() => {setActMsg('')}, 5000)
+}
+
+const contactsRefresh = (setPersons) => {
+  getEntries().then(phonebook => {setPersons(phonebook)})
 }
 
 const Search = ({newSearch, setSearch}) => {
@@ -27,29 +31,45 @@ const Search = ({newSearch, setSearch}) => {
 const Persons = ({persons, setPersons, newSearch, setError, setActMsg}) => {
   let output = persons
 
-  const handleDel = (id) => {
-    rmEntry(id).then(_ => getEntries().then(phonebook => {
-      setPersons(phonebook)
-      actionMsg(setActMsg, 'Contact deleted')
-    }))
+  const handleDel = (person) => {
+    rmEntry(person.id)
+      .then(_ => {
+        contactsRefresh(setPersons)
+        actionMsg(setActMsg, `Contact ${person.name} deleted`)
+        }
+      )
+      .catch(_ => {
+        contactsRefresh(setPersons)
+        errMsg(setError, `Contact ${person.name} already removed`)
+        }
+      )
   }
 
   if (newSearch !== '') {
     output = persons.filter(person => person.name.toLowerCase().includes(newSearch.toLowerCase()))
   }
-  return (
-    <div>
-      <h2>Numbers</h2>
-      {output.map(person => (
-        <div key={person.id}>
-          <p>Name - {person.name}</p>
-          <p>Phone - {person.number}</p>
-          <button onClick={() => handleDel(person.id)}>Delete</button>
-          <hr align="left" width="150" size="2" color="#ff0000" />
+  if (persons){
+    return (
+      <>
+        <h2>Numbers</h2>
+        <div className='phonebook'>
+          {output.map(person => (
+            <div className='contact' key={person.id}>
+              <p>Name - {person.name}</p>
+              <p>Phone - {person.number}</p>
+              <button onClick={() => handleDel(person)}>Delete</button>
+              <hr/>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
-  )
+      </>
+  )} else {
+    return (
+      <p>
+        <img width={150} src={require('./loading.gif')} alt='loading' />
+      </p>
+    )
+  }
 }
 
 const AddContact = ({persons, setPersons, setError, setActMsg}) => {
@@ -73,46 +93,58 @@ const AddContact = ({persons, setPersons, setError, setActMsg}) => {
     if (persons.some(val => val.name === personObj.name)) {
       if (window.confirm(`${newName} already exists, do you want to update number?`)) {
         const contact = persons.find(contact => contact.name === personObj.name)
-        updateEntry(contact.id, personObj).then(_ => getEntries().then(phonebook => setPersons(phonebook)))
-        actionMsg(setActMsg, 'Contact updated')
+        updateEntry(contact.id, personObj)
+          .then(_ => {
+            contactsRefresh(setPersons)
+            actionMsg(setActMsg, `Contact ${personObj.name} updated`)
+            }
+          )
+          .catch(_ => {
+            contactsRefresh(setPersons)
+            errMsg(setError, `Cannot update a contact ${personObj.name}`)
+            }
+          )
       }
     } else {
-      addEntry(personObj).then(_ => {
-        getEntries().then(phonebook => setPersons(phonebook))
-        setNewName('')
-        setNewNumber('')
-        actionMsg(setActMsg, 'Contact added')
-      })
+      addEntry(personObj)
+        .then(_ => {
+        contactsRefresh(setPersons)
+        actionMsg(setActMsg, `Contact ${personObj.name} added`)
+          }
+        )
+        .catch(_ => {errMsg(setError, `Cannot add a contact ${personObj.name}`)})
     }
   }
 
   return (
-    <form onSubmit={handleAdd}>
-      <div>
-        <h2>Add contacts</h2>
-        <p>Name: <input value={newName} onChange={handleNameInput}/></p>
-        <p>Phone: <input value={newNumber} onChange={handlePhoneInput}/></p>
-        <button type="submit">Add</button>
-      </div>
-    </form>
+    <>
+      <h2>Add contacts</h2>
+      <form onSubmit={handleAdd}>
+        <div className='add-contact'>
+          <p>Name: <input value={newName} onChange={handleNameInput}/></p>
+          <p>Phone: <input value={newNumber} onChange={handlePhoneInput}/></p>
+          <button type="submit">Add</button>
+        </div>
+      </form> 
+    </>
   )
 }
 
-const ErrorMsg = ({error}) => {
-  if (error) {
+const ErrorMsg = ({msg}) => {
+  if (msg) {
     return (
       <div className='error'>
-        {error}
+        {msg}
       </div>
     )
   }
 }
 
-const ActMsg = ({error}) => {
-  if (error) {
+const ActMsg = ({msg}) => {
+  if (msg) {
     return (
       <div className='plate'>
-        {error}
+        {msg}
       </div>
     )
   }
@@ -120,17 +152,16 @@ const ActMsg = ({error}) => {
 
 const App = () => {
   const [newSearch, setSearch] = useState('')
-  const [persons, setPersons] = useState([])
+  const [persons, setPersons] = useState()
   const [error, setError] = useState('')
   const [actionMsg, setActMsg] = useState('')
   useEffect(() => {
-    getEntries()
-    .then(phonebook => setPersons(phonebook))
+      contactsRefresh(setPersons)
     }, [])
   return (
     <div>
-      <ErrorMsg error={error} />
-      <ActMsg error={actionMsg} />
+      <ErrorMsg msg={error} />
+      <ActMsg msg={actionMsg} />
       <h1>Phonebook</h1>
       <Search newSearch={newSearch} setSearch={setSearch} />
       <Persons persons={persons} setPersons={setPersons} newSearch={newSearch} setError={setError} setActMsg={setActMsg}/>
