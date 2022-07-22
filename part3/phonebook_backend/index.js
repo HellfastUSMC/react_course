@@ -1,8 +1,13 @@
+// import { Contact } from './db_con'
+//import {PASSWORD} from './.env'
+require('dotenv').config()
 const { response, request } = require('express')
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 const app = express()
+const Contact = require('./models/db_con')
+
 
 app.use(express.static('build'))
 app.use(cors())
@@ -19,59 +24,45 @@ app.use(morgan(function (tokens, req, res) {
   ].join(' ')
 }))
 
-let phonebook = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
-
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
 })
 
+// app.get('/api/phonebook', (request, response) => {
+//   mongoose.connect(url).then(() => Contact.find({}).then(contacts => {
+//     response.json(contacts)
+//   })).then(() => mongoose.connection.close())
+// })
+
 app.get('/api/phonebook', (request, response) => {
-  response.json(phonebook)
+  Contact.find({}).then(contacts => {
+    response.json(contacts)
+  })
 })
 
 app.get('/api/phonebook/info', (request, response) => {
-  response.json({info: `Phonebook has information about ${phonebook.length} people for ${ new Date()}`})
+  Contact.find({}).then((phonebook) => response.json({info: `Phonebook has information about ${phonebook.length} people for ${ new Date()}`}))
 })
 
 app.get('/api/phonebook/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const contact = phonebook.find(contact => contact.id === id)
-    if (contact) {
+    const id = request.params.id
+    Contact.findById(id).then((contact) => {
+      if (contact) {
         response.json(contact)
-    } else {
+      } else {
         response.status(404).end()
-    }
+      }
+    })
+      .catch(() => response.status(500).end())
 })
 
 app.delete('/api/phonebook/:id', (request, response) => {
-    const id = Number(request.params.id)
-    phonebook = phonebook.filter(contact => contact.id !== id)
-    response.status(204).end()
+    const id = request.params.id
+    Contact.findByIdAndDelete(id).then(() => response.status(204).end()).catch(() => response.status(404).end())
+    
 })
 
 app.post('/api/phonebook/', (request, response) => {
-  console.log(request.body)
   let err = {}
   if (!request.body.name) { 
     err.name = 'Name is missing'
@@ -79,21 +70,18 @@ app.post('/api/phonebook/', (request, response) => {
   if (!request.body.number) { 
     err.number = 'Number is missing'
   }
-  if (phonebook.find(contact => contact.name === request.body.name)) {
-    err.unique = 'Field Name is not unique'
-  }
+  // if (Contact.find(contact => contact.name === request.body.name).catch(()=>console.log('not found'))) {
+  //   err.unique = 'Field Name is not unique'
+  // }
   if (Object.keys(err).length !== 0) {
     return response.status(400).json(err)
   }
-  const contactObj = request.body
-  console.log(contactObj)
-  const maxId = phonebook.length > 0
-  ? Math.max(...phonebook.map(n => n.id)) 
-  : 0
-
-  contactObj.id = maxId + 1
-
-  phonebook = phonebook.concat(contactObj)
+  const contactObj = new Contact({
+    name: request.body.name,
+    number: request.body.number,
+  })
+  
+  contactObj.save().then((contact) => {response.json(contact)}).catch((error) => {console.log(error.message)})
 
   response.json(contactObj).status(201)
 })
