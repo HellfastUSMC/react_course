@@ -97,11 +97,13 @@ const AddContact = ({persons, setPersons, setError, setActMsg}) => {
           .then(_ => {
             contactsRefresh(setPersons)
             actionMsg(setActMsg, `Contact ${personObj.name} updated`)
+            setNewName('')
+            setNewNumber('')
             }
           )
-          .catch(_ => {
+          .catch(error => {
             contactsRefresh(setPersons)
-            errMsg(setError, `Cannot update a contact ${personObj.name}`)
+            errMsg(setError, `Cannot update a contact ${personObj.name} - ${error.response.data.error}`)
             }
           )
       }
@@ -110,9 +112,14 @@ const AddContact = ({persons, setPersons, setError, setActMsg}) => {
         .then(_ => {
         contactsRefresh(setPersons)
         actionMsg(setActMsg, `Contact ${personObj.name} added`)
-          }
-        )
-        .catch(_ => {errMsg(setError, `Cannot add a contact ${personObj.name}`)})
+        setNewName('')
+        setNewNumber('')
+        }
+      )
+        .catch(error => {
+          console.log(error, error.message)
+          errMsg(setError, `Cannot add a contact - ${error.response.data.error}`)
+        })
     }
   }
 

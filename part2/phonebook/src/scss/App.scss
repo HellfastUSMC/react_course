@@ -20,10 +20,23 @@ body {
         justify-content: center;
         vertical-align: center;
         position: absolute;
-        width:  80%;
-        bottom: 10%;
+        width: 100%;
+        top: 10%;
         left: 0;
         right: 0;
+        background-color: rgb(18, 219, 0);
+    }
+    .error {
+        border: 5px solid $error-brd-color;
+        display: flex;
+        justify-content: center;
+        vertical-align: center;
+        position: absolute;
+        width: 100%;
+        top: 10%;
+        left: 0;
+        right: 0;
+        background-color: rgb(255, 47, 47);
     }
     button {
         border: none;
