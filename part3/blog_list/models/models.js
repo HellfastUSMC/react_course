@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+require('dotenv').config()
 
 const blogSchema = new mongoose.Schema({
     title: String,
@@ -16,7 +17,8 @@ const blogSchema = new mongoose.Schema({
       delete returnedObject.__v
     }
   })
-  const mongoUrl = process.env.DB_URL
+  console.log(process.env.DB_URL)
+  const mongoUrl = process.env.NODE_ENV === 'test' ? process.env.DB_URL : process.env.DB_TEST_URL
   mongoose.connect(mongoUrl)
 
   module.exports = Blog
